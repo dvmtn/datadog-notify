@@ -1,0 +1,43 @@
+#!/bin/bash
+
+api_key="$DATADOG_API_KEY"
+
+function usage(){
+  echo "Usage:"
+  echo "$0 title message [tags...]"
+  echo "  title:   The title of this event            ie. 'Foo Restated'"
+  echo "  message: The message for this event         ie. 'Foo was restarted by monit'"
+  echo "  tags:    Optional tags in key:vaule format  ie. 'app:foo group:bar"
+  echo
+  echo "Examples:"
+  echo "$0 'Test Event' 'This event is just for testing' 'test:true foo:bar'"
+  echo "$0 'Another Event' 'This event is just for testing'"
+  exit 1
+}
+
+title=$1
+message=$2
+
+if [[ -z "$title" || -z "$message" ]]; then
+  usage
+fi
+
+tag="environment:$(hostname) $3"
+tags=$(echo $tag | gsed -e's/[\.a-zA-Z:]*/\"&\"/g' -e's/\" \"/\", \"/g' )
+
+api="https://app.datadoghq.com/api/v1"
+datadog="${api}/events?api_key=${api_key}"
+
+payload=$(cat <<-EOJ
+  {
+    "title": "$title",
+    "text": "$message",
+    "tags": [$tags],
+    "alert_type": "info"
+  }
+EOJ
+)
+
+echo -e "$payload"
+
+curl -X POST -H "Content-type: application/json" -d "$payload" "$datadog"
