@@ -4,6 +4,10 @@ Datadog Notifier
 A simple shell script for creating events in Datadog.
 A great companion to Monit or other ops tools where you may want things reporting.
 
+Prerequisites
+-------------
+1. [Curl](http://curl.haxx.se/)
+2. [Datadog API Key](https://app.datadoghq.com/account/settings#api)
 
 Setup
 -----
