@@ -3,26 +3,39 @@
 api_key="$DATADOG_API_KEY"
 
 function usage(){
-  echo "Usage:"
-  echo "$0 title message [tags...]"
-  echo "  title:   The title of this event            ie. 'Foo Restated'"
-  echo "  message: The message for this event         ie. 'Foo was restarted by monit'"
-  echo "  tags:    Optional tags in key:vaule format  ie. 'app:foo group:bar"
-  echo
-  echo "Examples:"
-  echo "$0 'Test Event' 'This event is just for testing' 'test:true foo:bar'"
-  echo "$0 'Another Event' 'This event is just for testing'"
+  echo "Usage:" >&2
+  echo "$0 title message [error|warning|info|success] [tags...]" >&2
+  echo "  title:   The title of this event            ie. 'Foo Restated'" >&2
+  echo "  message: The message for this event         ie. 'Foo was restarted by monit'" >&2
+  echo "  type:    The event type, one of 'info', 'error', 'warning' or 'success'" >&2
+  echo "  tags:    Optional tags in key:vaule format  ie. 'app:foo group:bar" >&2
+  echo >&2
+  echo "Examples:" >&2
+  echo "$0 'Test Event' 'This event is just for testing' 'test:true foo:bar'" >&2
+  echo "$0 'Another Event' 'This event is just for testing'" >&2
   exit 1
 }
 
-title=$1
-message=$2
+title="$1"
+message="$2"
+alert_type="$3"
 
 if [[ -z "$title" || -z "$message" ]]; then
   usage
 fi
 
-tag="environment:$(hostname) $3"
+if [[ -z "$alert_type" ]]; then
+  echo "No level set, assuming 'info'" >&2
+  alert_type='info'
+fi
+
+if $(echo "$alert_type" | grep -qv 'error\|warning\|info\|success' ); then
+  echo "Failed: alert_type was '$alert_type', needs to be one of 'success', 'info', 'error' or 'warning'" >&2
+  echo >&2
+  usage
+fi
+
+tag="environment:$(hostname) $4"
 tags=$(echo $tag | gsed -e's/[\.a-zA-Z:]*/\"&\"/g' -e's/\" \"/\", \"/g' )
 
 api="https://app.datadoghq.com/api/v1"
@@ -33,11 +46,11 @@ payload=$(cat <<-EOJ
     "title": "$title",
     "text": "$message",
     "tags": [$tags],
-    "alert_type": "info"
+    "alert_type": "$alert_type"
   }
 EOJ
 )
 
-echo -e "$payload"
+#echo -e "$payload"
 
-curl -X POST -H "Content-type: application/json" -d "$payload" "$datadog"
+curl -s -X POST -H "Content-type: application/json" -d "$payload" "$datadog"
