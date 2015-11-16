@@ -20,6 +20,11 @@ title="$1"
 message="$2"
 alert_type="$3"
 
+if [[ -z "$DATADOG_API_KEY" ]]; then
+  echo "Please provide your API key in the environment variabe DATADOG_API_KEY" >&2
+  usage
+fi
+
 if [[ -z "$title" || -z "$message" ]]; then
   usage
 fi
