@@ -1,5 +1,5 @@
-Datadog Notifier
-================
+Datadog Notify
+==============
 
 A simple shell script for creating events in Datadog.
 A great companion to Monit or other ops tools where you may want things reporting.
