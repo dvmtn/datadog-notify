@@ -48,7 +48,7 @@ if $(echo "$alert_type" | grep -qv 'error\|warning\|info\|success' ); then
 fi
 
 tag="environment:$(hostname) $4"
-tags=$(echo $tag | gsed -e's/[\.a-zA-Z:]*/\"&\"/g' -e's/\" \"/\", \"/g' )
+tags=$(echo $tag | sed -e's/[\.a-zA-Z:]*/\"&\"/g' -e's/\" \"/\", \"/g' )
 
 api="https://app.datadoghq.com/api/v1"
 datadog="${api}/events?api_key=${api_key}"
