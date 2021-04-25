@@ -65,4 +65,4 @@ EOJ
 
 #echo -e "$payload"
 
-curl -s -X POST -H "Content-type: application/json" -d "$payload" "$datadog"
+curl -s -X POST -H "Content-type: application/json" -d "$(echo "${payload}" | sed ':a;N;$!ba;s/\n/ /g')" "$datadog"
